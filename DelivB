@@ -1,0 +1,93 @@
+import java.io.*;
+
+// Class DelivB does the work for deliverable DelivB of the Prog340
+// Ge Xiong 3.5.19
+// reference to week3 notes and inclass exercise 
+
+public class DelivB {
+
+	File inputFile;
+	File outputFile;
+	PrintWriter output;
+	Graph g;
+	int time = 0;
+	
+	public DelivB( File in, Graph gr ) {
+		inputFile = in;
+		g = gr;
+		
+		// Get output file name.
+		String inputFileName = inputFile.toString();
+		String baseFileName = inputFileName.substring( 0, inputFileName.length()-4 ); // Strip off ".txt"
+		String outputFileName = baseFileName.concat( "_out.txt" );
+		outputFile = new File( outputFileName );
+		if ( outputFile.exists() ) {    // For retests
+			outputFile.delete();
+		}
+	
+		try {			
+			output = new PrintWriter(outputFile);			
+		}
+		catch (Exception x ) { 
+			System.err.format("Exception: %s%n", x);
+			System.exit(0);
+		}
+//my code starts...	
+		/*code for finding the finish and end time of every node*/
+		// initialize the instance variables in Node class
+		// sets all nodes in the list to white
+		
+		for (Node n : g.nodeList) {
+			n.color = "WHITE"; // "String color" instance variable created in Node class
+			n.parent = null; // "Node parent" instance variable created in Node class
+		}
+		System.out.printf("\n%-15s\t%-15s\t%-15s\n", "Node", "Start time", "End Time");
+		for (Node n : g.nodeList) {
+			if (n.color == "WHITE")
+				DFSvisit(g, n);
+		System.out.printf("%-15s\t%-15d\t%-15d\n", n.getName(), n.discoveryTime, n.finishTime); 
+		}
+		
+		/*code for determining the type (BCFT)*/
+		// B: back edge; C: cross edge; F: forward edge; T: tree edge
+		System.out.printf("\n%-15s\t%-15s\n", "Edge", "Type");
+		for (Edge edge: g.edgeList) { 
+			Node u = edge.getTail();
+			Node v = edge.getHead();
+			String type;
+			String edges = String.format("%s - %s" , u.getAbbrev(), v.getAbbrev());
+		
+			if ((u.discoveryTime >= v.discoveryTime) && (u.finishTime <= v.finishTime))
+				type = "B";
+			else if ((u.discoveryTime < v.discoveryTime) && (u.finishTime > v.finishTime)) {
+				if (v.parent == u)
+					type = "T";
+				else
+					type = "F";
+			}
+			// else if ((v.discoveryTime < v.finishTime) && (v.finishTime < u.discoveryTime) && (u.discoveryTime < u.finishTime))
+			else
+				type = "C";
+		System.out.printf("%-15s\t%-15s\n", edges, type);
+		}
+		output.close();
+	}
+	
+	public void DFSvisit(Graph gr, Node n) {
+		time = time + 1;
+		n.discoveryTime = time; // "int discoveryTime" instance variable created in Node class
+		n.color = "GRAY";
+		// setting the parent nodes
+		for (Edge v: n.getOutgoingEdges()) {
+			if (v.getHead().color == "WHITE") {
+				v.getHead().parent = n;
+				DFSvisit(gr, v.getHead());
+			}
+		}
+		n.color = "BLACK";
+		time = time + 1;
+		n.finishTime = time; // "int finishTime" instance variable created in Node class
+	}
+}
+
+
