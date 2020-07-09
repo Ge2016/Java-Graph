@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 // Class DelivC does the work for deliverable DelivC of the Prog340
+// Ge Xiong 4.25.2020
 
 public class DelivC {
 
@@ -32,7 +33,7 @@ public class DelivC {
             System.err.format("Exception: %s%n", x);
             System.exit(0);
         }
-        
+//my code starts...
         //creates an array of the start tour
         //creates the array size to be of the graph Nodes plus an extra spot, for coming back to the first node
         Node[] startTour = new Node[g.nodeList.size()+1];
