@@ -1,0 +1,129 @@
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
+
+// Class DelivC does the work for deliverable DelivC of the Prog340
+
+public class DelivC {
+
+    File inputFile;
+    File outputFile;
+    PrintWriter output;
+    Graph g;
+    
+    public DelivC(File in, Graph gr) {
+        inputFile = in;
+        g = gr;
+
+        // Get output file name.
+        String inputFileName = inputFile.toString();
+        String baseFileName = inputFileName.substring(0, inputFileName.length() - 4); // Strip off ".txt"
+        String outputFileName = baseFileName.concat("_out.txt");
+        outputFile = new File(outputFileName);
+        if (outputFile.exists()) {    // For retests
+            outputFile.delete();
+        }
+
+        try {
+            output = new PrintWriter(outputFile);
+        } catch (Exception x) {
+            System.err.format("Exception: %s%n", x);
+            System.exit(0);
+        }
+        
+        //creates an array of the start tour
+        //creates the array size to be of the graph Nodes plus an extra spot, for coming back to the first node
+        Node[] startTour = new Node[g.nodeList.size()+1];
+        for (int i = 0; i < startTour.length-1; i++) {
+        	startTour[i] = g.getNodeList().get(i);
+        	startTour[startTour.length-1] = g.getNodeList().get(0);	
+        }
+        //sets the edges
+        for (Edge e : g.edgeList) 
+    		e.setDist(e.label); 
+    	
+//starting main code...
+     	int currentDist;
+    	Node[] currentTour = startTour;
+    	int startIntTour = getDistance(startTour);
+    	ArrayList<String> improveTour = new ArrayList<String>();
+    	String storeTour = "";
+    	String s = "";
+    	
+    	//Part 1: Verbose Output
+    	System.out.println("Tours: ");
+    	output.println("Tours: ");
+    	int iterate = 0;
+   		while(iterate < 10) {
+   			//store the current tour path into a string and print it
+   			for (Node n : currentTour) {
+   				storeTour += n.getVal();
+   				System.out.print(n.getVal());
+   				output.print(n.getVal());
+   			}
+	   		currentDist = getDistance(currentTour);
+	   		System.out.println(" " + currentDist);
+	   		output.println(" " + currentDist);
+	   		//shuffles a new tour
+	   		currentTour = shuffle(currentTour);	 
+
+	   		//Part 2: creating improve tours 
+	   		if (currentDist <= startIntTour) {
+	   			s += storeTour + " " + currentDist; 
+	   			improveTour.add(s);
+	   		}
+	   		//resets the strings for new strings
+	   		storeTour = "";
+	   		s = "";
+	   		
+	   		iterate++;
+   		}
+   		//Part 2: Summary Output
+   		System.out.println("\nImproved Tours: ");
+   		output.println("\nImproved Tours: ");
+   		for(String s2 : improveTour) {
+   			System.out.println(s2);
+   			output.println(s2);
+   		}
+   		output.close();
+    }
+//End of main code. Introducing code methods... 
+		Node[] shuffle(Node[] arr) {
+			Node[] arr2 = Arrays.copyOfRange(arr, 1, arr.length-1);
+			ArrayList<Node> arr3 = new ArrayList<>();
+			Random rand = new Random();
+			//randomize this arr2
+		    for (int i = 0; i < arr2.length; i++) {
+		    	int swap = rand.nextInt(arr2.length);
+		    	Node temp = arr2[swap];
+		    	arr2[swap] = arr2[i];
+		    	arr2[i] = temp;
+			}
+		    //creates a third array that takes in the randomize arr2 nodes
+		  	arr3.add(0, arr[0]);
+		    for (Node n : arr2)
+    			arr3.add(n);
+		    arr3.add(arr[arr.length-1]);
+		    
+		    //arr = arr3; converts the arraylist back to array
+		    for (int i = 0; i < arr.length-1; i++) 
+	        	arr[i] = arr3.get(i);
+		    
+			return arr;
+		}
+		
+	    int getDistance(Node[] tour) {
+        	int currentDist = 0;
+	        for (int i = 0; i < tour.length-1; i++) {
+	        	for (Edge e : tour[i].getOutgoingEdges()) {
+	        		Node u = e.getTail();
+					Node v = e.getHead();
+	        		if ((tour[i] == u) && (tour[i+1] == v)) 
+	        			currentDist += e.dist;
+	        	}
+	        }
+	        return currentDist;
+        }
+}
